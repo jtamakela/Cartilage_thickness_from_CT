@@ -2,7 +2,7 @@ function [PROFILES_NORMALIZED, PROFILES_ORIGINAL, info] = Cartilage_thickness_fr
 %% m-file for analysing cartilage thickness from CT images
 %% Intended for Mach-1 measurements.
 
-%% (c) Janne Mäkelä 11/2018
+%% (c) Janne Mäkelä October / 2018
 
 clear all, close all, clc;
 
