@@ -1,11 +1,9 @@
-function [PROFILES_NORMALIZED, PROFILES_ORIGINAL, info] = Cartilage_thickness_from_CT
+function [Thicknesses, info] = Cartilage_thickness_from_CT
 %% m-file for analysing cartilage thickness from CT images
 %% Intended for Mach-1 measurements.
 
 %% (c) Janne Mäkelä October / 2018
 % #Click on the measurement location and measure
-
-function [Thicknesses, info] = Cartilage_thickness_from_CT
 
 %Calculates cartilage thickness from a chosen location
 
@@ -25,7 +23,7 @@ info = [];
 dicom_slider(Dicoms,100) %Using dicom_slider.m function for viewing
 
 %Orienting the figures
-[Dicoms_x Dicoms_y] = orientation(Dicoms);
+[Dicoms_x, Dicoms_y] = orientation(Dicoms);
 
 %TEMP
 if exist('SUBIM_x')
@@ -51,8 +49,9 @@ title('Pick your poison'); %
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
 %Choose the location
-[xcoord ycoord] = ginput(1);
-pause(0.5)
+figure(1);
+pause(1) %Reduces crashing
+[xcoord, ycoord] = ginput(1);
 plot(xcoord,ycoord,'+','markersize', 40)
 
 %Displaying the chosen location from two angles
@@ -62,8 +61,8 @@ plot(xcoord,ycoord,'+','markersize', 40)
 slice_x = Dicoms_x(:,:,round(xcoord));
 slice_y = Dicoms_y(:,:, round(ycoord));
 
-thickness = imdistancecalculator(slice_x,slice_y, xcoord, ycoord);
-
+Thicknesses = imdistancecalculator(slice_x,slice_y, xcoord, ycoord);
+disp(['Measured thickness is ', num2str(Thicknesses), ' um'])
 
 
 
@@ -162,7 +161,7 @@ end
 
 %---------------------------------------------------------------------
 
-function [SUBIM_x SUBIM_y] = orientation(Dicoms)
+function [SUBIM_x, SUBIM_y] = orientation(Dicoms)
 %Creates two image stacks from two different directions
 
 %Preallocating for efficiancy
@@ -205,13 +204,13 @@ t = figure(99);
 figchoice = 1000;
 subplot(2,1,1)
 imagesc(slice_x);
-title('X-direction ->')
+title('X-direction ->', 'interpreter', 'none')
 axis equal;
 line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
 
 subplot(2,1,2)
 imagesc(slice_y);
-title('Y-direction -^')
+title('Y-direction -^', 'interpreter', 'none')
 axis equal;
 line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
 
@@ -231,13 +230,13 @@ while figchoice ~= 13
     if exist('position')
         subplot(2,1,1)
         imagesc(slice_x);
-        title('X-direction ->')
+        title('X-direction ->', 'interpreter', 'none')
         axis equal;
         line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
         h1 = imline(gca,position(:,1),position(:,2));
         subplot(2,1,2)
         imagesc(slice_y);
-        title('Y-direction -^')
+        title('Y-direction -^', 'interpreter', 'none')
         axis equal;
         line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
         h2 = imline(gca,position(:,1),position(:,2));
@@ -257,7 +256,7 @@ while figchoice ~= 13
         
         subplot(2,1,1)
         imagesc(slice_x);
-        title('X-direction ->')
+        title('X-direction ->', 'interpreter', 'none')
         axis equal;
         line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
         if exist('position')
@@ -268,7 +267,7 @@ while figchoice ~= 13
         position = wait(h1);
         subplot(2,1,2)
         imagesc(slice_y);
-        title('Y-direction -^')
+        title('Y-direction -^', 'interpreter', 'none')
         axis equal;
         line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
         %Calulating the new location 
@@ -279,7 +278,7 @@ while figchoice ~= 13
         
         subplot(2,1,2)
         imagesc(slice_y);
-        title('Y-direction -^')
+        title('Y-direction -^', 'interpreter', 'none')
         axis equal;
         line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
         if exist('position')
@@ -290,7 +289,7 @@ while figchoice ~= 13
         position = wait(h2);
         subplot(2,1,1)
         imagesc(slice_x);
-        title('X-direction ->')
+        title('X-direction ->', 'interpreter', 'none')
         axis equal;
         line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
         %Calculating the new location
@@ -328,22 +327,7 @@ end %function
 % % % % % %             h = line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
 % % % % % %         end
 % % % % % %     end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-end
+% % % % % % end
 
 
 
