@@ -1,13 +1,27 @@
-function [Thicknesses, info] = Cartilage_thickness_from_CT
+% function [Thicknesses, info] = Cartilage_thickness_from_CT
+function [Thicknesses, XCOORD, YCOORD] = Cartilage_thickness_from_CT
 %% m-file for analysing cartilage thickness from CT images
 %% Intended for Mach-1 measurements.
+%% This code can be found and edited at https://github.com/jtamakela/Cartilage_thickness_from_CT
 
 %% (c) Janne Mäkelä October / 2018
-% #Click on the measurement location and measure
+% Click on the measurement location and measure
 
-%Calculates cartilage thickness from a chosen location
+%Calculates cartilage thickness from a chosen location in CT image.
+%Saves the coordinates where thicknesses have been calculated. 
 
 clear all, close all, clc
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+% CHECK THIS ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+% RESOLUTION OF THE CT STACK
+resolution = [40 20 20]; %[Z X Y]. Voxel size in micrometers. Defines also the aspect ratio in figures
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+
+aspectratio = resolution./min(resolution); %Drawing the figures based on the given resolution
 
 %Preallocating the final parameters
 Thicknesses = [];
@@ -17,21 +31,22 @@ info = [];
 % LOAD IMAGES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [Dicoms, info] = load_dicoms;
 
-%Dicoms = Dicoms.*info.RescaleSlope+info.RescaleIntercept; %Uses the same pixel values as Analyze (The script is optimized for this scale)
+% This is for rescaling the voxel values
+Dicoms = Dicoms.*info.RescaleSlope+info.RescaleIntercept;
 % Otherwise handles data using native pixel values (original, short integer value)
 
-dicom_slider(Dicoms,100) %Using dicom_slider.m function for viewing
 
 %Orienting the figures
 [Dicoms_x, Dicoms_y] = orientation(Dicoms);
 
-%TEMP
-if exist('SUBIM_x')
-Dicoms_x = SUBIM_x;
-Dicoms_y = SUBIM_y;
-end
+% %%This is needed only when evaluating selections
+% if exist('SUBIM_x')
+%     Dicoms_x = SUBIM_x;
+%     Dicoms_y = SUBIM_y;
+% end
 
-%Options to display
+%Options to display all the slices using dicom_slider function
+% dicom_slider(Dicoms,100)
 % dicom_slider(Dicoms_x,100) %Using dicom_slider.m function for viewing
 % dicom_slider(Dicoms_y,100) %Using dicom_slider.m function for viewing
 
@@ -43,28 +58,45 @@ colormap jet
 imagesc(dicom_mask)
 axis equal;
 hold on;
-title('Pick your poison'); %
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
+% This marks the number of locations
+location_i = 1;
 
 %Choose the location
 figure(1);
 pause(1) %Reduces crashing
+title('Pick the location. Press enter to quit'); %
+
+
 [xcoord, ycoord] = ginput(1);
-plot(xcoord,ycoord,'+','markersize', 40)
+while ~isempty(xcoord) %If enter is not pressed
+    
+    plot(xcoord,ycoord,'+','markersize', 40)
+    text(xcoord+20,ycoord-20,num2str(location_i),'HorizontalAlignment','center','fontsize', 20);
+    
+    %Displaying the chosen location from two angles
+    %Calculating the thickness
+    
+    
+    slice_x = Dicoms_x(:,:,round(xcoord));
+    slice_y = Dicoms_y(:,:, round(ycoord));
+    
+    Dimensions = imdistancecalculator(slice_x,slice_y, xcoord, ycoord, aspectratio); %[Z X Y]
+    Thicknesses(location_i) = sqrt( (resolution(1)*Dimensions(1))^2 + (resolution(2)*Dimensions(2))^2 + (resolution(3)*Dimensions(3))^2);
+    
+    disp(['Measured thickness in #', num2str(location_i), ' is ', num2str(Thicknesses(location_i)), ' um'])
+    
+    XCOORD(location_i) = xcoord; %Saving
+    YCOORD(location_i) = ycoord; 
 
-%Displaying the chosen location from two angles
-%Calculating the thickness
-
-
-slice_x = Dicoms_x(:,:,round(xcoord));
-slice_y = Dicoms_y(:,:, round(ycoord));
-
-Thicknesses = imdistancecalculator(slice_x,slice_y, xcoord, ycoord);
-disp(['Measured thickness is ', num2str(Thicknesses), ' um'])
-
-
+    location_i = location_i+1;
+    figure(1);
+    pause(1) %Reduces crashing
+    title('Pick the location. Press enter to quit'); %
+    [xcoord, ycoord] = ginput(1);
+end
 
 
 
@@ -111,53 +143,53 @@ close(h);
 end
 
 %---------------------------------------------------------------------
-% % % % % 
-% % % % % function dicom_slider(Dicoms,x)
-% % % % % % Function to use slider for image
-% % % % % 
-% % % % % switch nargin
-% % % % %     case 2
-% % % % %         fig=figure(x); %Uses the same figure
-% % % % %     case 1
-% % % % %         fig = figure;
-% % % % % end
-% % % % % 
-% % % % % Stack = Dicoms;
-% % % % % 
-% % % % % koko = size(Stack,3);
-% % % % % 
-% % % % % %fig=figure;
-% % % % % set(fig,'Name','Image','Toolbar','figure');%,...
-% % % % % %'NumberTitle','off')
-% % % % % % Create an axes to plot in
-% % % % % axes('Position',[.15 .05 .7 .9]);
-% % % % % % sliders for epsilon and lambda
-% % % % % slider1_handle=uicontrol(fig,'Style','slider','Max',koko,'Min',1,...
-% % % % %     'Value',2,'SliderStep',[1/(koko-1) 10/(koko-1)],...
-% % % % %     'Units','normalized','Position',[.02 .02 .14 .05]);
-% % % % % uicontrol(fig,'Style','text','Units','normalized','Position',[.02 .07 .14 .04],...
-% % % % %     'String','Choose frame');
-% % % % % % Set up callbacks
-% % % % % vars=struct('slider1_handle',slider1_handle,'Stack',Stack);
-% % % % % set(slider1_handle,'Callback',{@slider1_callback,vars});
-% % % % % plotterfcn(vars)
-% % % % % % End of main file
-% % % % % 
-% % % % % % Callback subfunctions to support UI actions
-% % % % %     function slider1_callback(~,~,vars)
-% % % % %         % Run slider1 which controls value of epsilon
-% % % % %         plotterfcn(vars)
-% % % % %     end
-% % % % % 
-% % % % %     function plotterfcn(vars)
-% % % % %         % Plots the image
-% % % % %         %imshow(vars.Stack(:,:,round(get(vars.slider1_handle,'Value'))));
-% % % % %         imagesc(vars.Stack(:,:,round(get(vars.slider1_handle,'Value'))));
-% % % % %         axis equal;
-% % % % %         title(num2str(get(vars.slider1_handle,'Value')));
-% % % % %         
-% % % % %     end
-% % % % % end
+
+function dicom_slider(Dicoms,x) %(Stack, figure number)
+% Function to use slider for image
+
+switch nargin
+    case 2
+        fig=figure(x); %Uses the same figure
+    case 1
+        fig = figure;
+end
+
+Stack = Dicoms;
+
+koko = size(Stack,3);
+
+%fig=figure;
+set(fig,'Name','Image','Toolbar','figure');%,...
+%'NumberTitle','off')
+% Create an axes to plot in
+axes('Position',[.15 .05 .7 .9]);
+% sliders for epsilon and lambda
+slider1_handle=uicontrol(fig,'Style','slider','Max',koko,'Min',1,...
+    'Value',2,'SliderStep',[1/(koko-1) 10/(koko-1)],...
+    'Units','normalized','Position',[.02 .02 .14 .05]);
+uicontrol(fig,'Style','text','Units','normalized','Position',[.02 .07 .14 .04],...
+    'String','Choose frame');
+% Set up callbacks
+vars=struct('slider1_handle',slider1_handle,'Stack',Stack);
+set(slider1_handle,'Callback',{@slider1_callback,vars});
+plotterfcn(vars)
+% End of main file
+
+% Callback subfunctions to support UI actions
+    function slider1_callback(~,~,vars)
+        % Run slider1 which controls value of epsilon
+        plotterfcn(vars)
+    end
+
+    function plotterfcn(vars)
+        % Plots the image
+        %imshow(vars.Stack(:,:,round(get(vars.slider1_handle,'Value'))));
+        imagesc(vars.Stack(:,:,round(get(vars.slider1_handle,'Value'))));
+        axis equal;
+        title(num2str(get(vars.slider1_handle,'Value')));
+        
+    end
+end
 
 %---------------------------------------------------------------------
 
@@ -195,24 +227,43 @@ end
 
 %---------------------------------------------------------------------
 
-function [thickness] = imdistancecalculator(slice_x, slice_y, xcoord, ycoord)
+function Dimensions = imdistancecalculator(slice_x, slice_y, xcoord, ycoord, aspectratio)
 %Drawing and calculating
+
+clear position
 
 %Preallocating
 thickness = 0;
-t = figure(99);
+t = figure('Name', 'Please press Enter when ready');
+% figure('units','normalized','outerposition',[0 0 1 1])
 figchoice = 1000;
-subplot(2,1,1)
+subplot(1,2,1)
 imagesc(slice_x);
-title('X-direction ->', 'interpreter', 'none')
-axis equal;
+daspect(aspectratio)
+% axis equal;
+
+%title('X-direction ->', 'interpreter', 'none')
+title('Choose your angle: X -> [1]');
+
 line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
 
-subplot(2,1,2)
+subplot(1,2,2)
 imagesc(slice_y);
-title('Y-direction -^', 'interpreter', 'none')
-axis equal;
+daspect(aspectratio)
+% axis equal;
+
+%title('Y-direction -^', 'interpreter', 'none')
+title('Choose your angle: Y -^ [2]');
+
 line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
+
+%Allocating lines
+%X-axis figure
+leftpoint1 = ycoord;
+rightpoint1 = ycoord;
+%Y-axis figure
+leftpoint2 = xcoord;
+rightpoint2 = xcoord;
 
 
 
@@ -220,26 +271,32 @@ while figchoice ~= 13
     
     % This is just to assure that there exists no empty position
     if exist('position')
-        
-        if isempty(position)
+        if isempty(position.position1) || isempty(position.position2)
             clear position
         end
-    end    
+    end
     
-    %Checking existence
+    %Checking existence and displaying the current situation
     if exist('position')
-        subplot(2,1,1)
+        subplot(1,2,1)
         imagesc(slice_x);
-        title('X-direction ->', 'interpreter', 'none')
-        axis equal;
+        %title('X-direction ->', 'interpreter', 'none')
+        title('Choose your angle: X [1]');
+        daspect(aspectratio)
+        % axis equal;
+        
         line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
-        h1 = imline(gca,position(:,1),position(:,2));
-        subplot(2,1,2)
+        h1 = imline(gca,position.position1);
+        subplot(1,2,2)
         imagesc(slice_y);
         title('Y-direction -^', 'interpreter', 'none')
-        axis equal;
+        title('Choose your angle: Y -^ [2]');
+        daspect(aspectratio)
+        % axis equal;
+        
+        
         line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
-        h2 = imline(gca,position(:,1),position(:,2));
+        h2 = imline(gca,position.position2);
     end
     % drawsubplot(2)
     
@@ -254,59 +311,88 @@ while figchoice ~= 13
     % % % Playing with the lines
     if figchoice == 49 %1-button
         
-        subplot(2,1,1)
+        subplot(1,2,1)
         imagesc(slice_x);
-        title('X-direction ->', 'interpreter', 'none')
-        axis equal;
+        %title('X-direction ->', 'interpreter', 'none')
+        title('Choose your angle: X -> [1]');
+        daspect(aspectratio)
+        % axis equal;
+        
         line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
         if exist('position')
-            h1 = imline(gca,position(:,1),position(:,2));
+            h1 = imline(gca,position.position1);
         else
             h1 = imline;
         end
-        position = wait(h1);
-        subplot(2,1,2)
+        position.position1 = wait(h1);
+        subplot(1,2,2)
         imagesc(slice_y);
-        title('Y-direction -^', 'interpreter', 'none')
-        axis equal;
+        %title('Y-direction -^', 'interpreter', 'none')
+        title('Choose your angle: Y -^ [2]');
+        daspect(aspectratio)
+        % axis equal;
+        
+        
         line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
-        %Calulating the new location 
-        h2 = h1;
+        
+        %Calulating the new location
+        % Z-axis
+        highpoint = position.position1(1,2);
+        lowpoint = position.position1(2,2);
+        
+        %These are used in the X-axis figure
+        % With these the angle can change
+        leftpoint1 = position.position1(1,1);
+        rightpoint1 = position.position1(2,1);
+        
+        
+        position.position2 = [leftpoint2 highpoint;  rightpoint2 lowpoint];
+        
         %And displaying
-        h2 = imline(gca,position(:,1),position(:,2));
+        h2 = imline(gca,position.position2);
     elseif figchoice == 50
         
-        subplot(2,1,2)
+        subplot(1,2,2)
         imagesc(slice_y);
-        title('Y-direction -^', 'interpreter', 'none')
-        axis equal;
+        title('Choose your angle: Y -^ [2]');
+        daspect(aspectratio)
+        % axis equal;
+        
+        
         line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
         if exist('position')
-            h2 = imline(gca,position(:,1),position(:,2));
+            h2 = imline(gca,position.position2);
         else
             h2 = imline;
         end
-        position = wait(h2);
-        subplot(2,1,1)
+        position.position2 = wait(h2);
+        subplot(1,2,1)
         imagesc(slice_x);
-        title('X-direction ->', 'interpreter', 'none')
-        axis equal;
+        title('Choose your angle: X -> [1]');
+        daspect(aspectratio)
+        % axis equal;
+        
+        
         line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
         %Calculating the new location
-        h1 = h2;
+        % Z-axis
+        highpoint = position.position2(1,2);
+        lowpoint = position.position2(2,2);
+        %These are used in the X-axis figure
+        % With these the angle can change
+        leftpoint2 = position.position2(1,1);
+        rightpoint2 = position.position2(2,1);
+        
+        position.position1 = [leftpoint1 highpoint;  rightpoint1 lowpoint];
         %And displaying
-        h1 = imline(gca,position(:,1),position(:,2));
+        h1 = imline(gca,position.position1);
     end
     
     
 end %while
 
+Dimensions = [(highpoint-lowpoint), (rightpoint1 - leftpoint1), (rightpoint2 - leftpoint2)]; %[Z X Y]
 
-
-%thickness = sqrt(a^2+b^2+c^2)
-
-
-%%
 
 end %function
 
