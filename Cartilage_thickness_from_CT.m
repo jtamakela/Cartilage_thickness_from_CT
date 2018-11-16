@@ -91,17 +91,18 @@ while ~isempty(xcoord) %If enter is not pressed
     XCOORD(location_i) = xcoord; %Saving
     YCOORD(location_i) = ycoord; 
 
+    save('THICKNESS_temp.mat','Thicknesses', 'XCOORD', 'YCOORD') % In case the code crashes
+
+    
     location_i = location_i+1;
     figure(1);
     pause(1) %Reduces crashing
     title('Pick the location. Press enter to quit'); %
     [xcoord, ycoord] = ginput(1);
+    
 end
 
-
-
-
-
+delete 'THICKNESS_temp.mat' %No need for this if the code executes succesfully
 
 
 
