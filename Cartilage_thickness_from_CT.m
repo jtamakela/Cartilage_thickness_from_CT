@@ -69,6 +69,7 @@ figure(1);
 pause(1) %Reduces crashing
 title('Pick the location. Press enter to quit'); %
 
+% question = menu('Satisfied?','1) Yes','2) No'); %Option to fall back should be added
 
 [xcoord, ycoord] = ginput(1);
 while ~isempty(xcoord) %If enter is not pressed
