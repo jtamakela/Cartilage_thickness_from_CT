@@ -241,7 +241,9 @@ clear position
 
 %Preallocating
 thickness = 0;
-t = figure('Name', 'Please press Enter when ready');
+t = figure(2);
+set(t,'Name','Please press Enter when ready','Toolbar','figure');
+%t = figure('Name', 'Please press Enter when ready');
 % figure('units','normalized','outerposition',[0 0 1 1])
 figchoice = 1000;
 subplot(1,2,1)
