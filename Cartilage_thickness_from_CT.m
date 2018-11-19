@@ -18,7 +18,7 @@ clear all, close all, clc
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % CHECK THIS ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 % RESOLUTION OF THE CT STACK
-resolution = [20 20 20]; %[Z X Y]. Voxel size in micrometers. Defines also the aspect ratio in figures
+resolution = [40 40 40]; %[Z X Y]. Voxel size in micrometers. Defines also the aspect ratio in figures
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
