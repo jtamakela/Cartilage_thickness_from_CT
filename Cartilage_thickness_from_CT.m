@@ -10,6 +10,9 @@ function [Thicknesses, XCOORD, YCOORD] = Cartilage_thickness_from_CT
 %Calculates cartilage thickness from a chosen location in CT image.
 %Saves the coordinates where thicknesses have been calculated. 
 
+% Currently converts the image stack so that the sample is observed from above (similarly as in Mach-1). 
+% This is done inside load_dicoms (~line 125 ->)
+
 clear all, close all, clc
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -46,7 +49,7 @@ Dicoms = Dicoms.*info.RescaleSlope+info.RescaleIntercept;
 % end
 
 %Options to display all the slices using dicom_slider function
-% dicom_slider(Dicoms,100)
+dicom_slider(Dicoms,100)
 % dicom_slider(Dicoms_x,100) %Using dicom_slider.m function for viewing
 % dicom_slider(Dicoms_y,100) %Using dicom_slider.m function for viewing
 
@@ -140,9 +143,10 @@ h = waitbar(0,'Loading dicoms, please wait...'); %Display waitbar
 temp = dicomread([num2str(path) f dicomnames(1).name]);
 Dicoms= int16(zeros(size(temp,1),size(temp,2), length(dicomnames)));
 
-%Ali's figures are upside down
 for i = 1:length(dicomnames)
-    Dicoms(:,:,length(dicomnames)+1-i)= dicomread([num2str(path) f dicomnames(i).name]); %Doing the flipping
+    % Dicoms(:,:,i)= dicomread([num2str(path) f dicomnames(i).name]); %Using native stack
+    % Ali's figures are upside down
+    Dicoms(:,:,length(dicomnames)+1-i)= fliplr(dicomread([num2str(path) f dicomnames(i).name])); %Flipping the stack (up=down, left=right)
     waitbar(i/length(dicomnames));
 end
 close(h);
