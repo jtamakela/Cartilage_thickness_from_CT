@@ -79,7 +79,7 @@ question = 1; %"Satisfied?"
 [xcoord, ycoord] = ginput(1);
 while ~isempty(xcoord) %If enter is not pressed
     
-    plot(xcoord,ycoord,'+','markersize', 40, 'Linewidth', 1)
+    plot(xcoord,ycoord,'+','markersize', 40, 'Linewidth', 1.5)
     text(xcoord+20,ycoord-20,num2str(location_i),'HorizontalAlignment','center','fontsize', 20);
     
     %Displaying the chosen location from two angles
@@ -114,8 +114,9 @@ end
 
 delete 'THICKNESS_temp.mat' %No need for this if the code executes succesfully
 
-
-
+disp(['- - - - - - - - - - - - - - - - - '])
+disp(['- - - - - - - DONE - - - - - - - '])
+disp(['- - - - - - - - - - - - - - - - - '])
 
 end
 
