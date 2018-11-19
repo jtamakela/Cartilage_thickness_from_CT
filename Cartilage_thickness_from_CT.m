@@ -1,10 +1,9 @@
-% function [Thicknesses, info] = Cartilage_thickness_from_CT
 function [Thicknesses, XCOORD, YCOORD] = Cartilage_thickness_from_CT
 %% m-file for analysing cartilage thickness from CT images
-%% Intended for Mach-1 measurements.
-%% This code can be found and edited at https://github.com/jtamakela/Cartilage_thickness_from_CT
+%% Developed for Mach-1 measurements.
+%% This code is available at https://github.com/jtamakela/Cartilage_thickness_from_CT
 
-%% (c) Janne Mäkelä October / 2018
+%% (c) Janne Mäkelä November / 2018
 % Click on the measurement location and measure
 
 %Calculates cartilage thickness from a chosen location in CT image.
@@ -34,9 +33,10 @@ info = [];
 % LOAD IMAGES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [Dicoms, info] = load_dicoms;
 
-% This is for rescaling the voxel values
-Dicoms = Dicoms.*info.RescaleSlope+info.RescaleIntercept;
-% Otherwise handles data using native pixel values (original, short integer value)
+% % This is for rescaling the voxel values
+% % Not necessary if imagesc is used
+%Dicoms = Dicoms.*info.RescaleSlope+info.RescaleIntercept;
+% % Otherwise handles data using native pixel values (original, short integer value)
 
 
 %Orienting the figures
@@ -48,11 +48,12 @@ Dicoms = Dicoms.*info.RescaleSlope+info.RescaleIntercept;
 %     Dicoms_y = SUBIM_y;
 % end
 
-%Options to display all the slices using dicom_slider function
-dicom_slider(Dicoms,100)
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% % % Options to display all the slices using dicom_slider function
+% dicom_slider(Dicoms,100)
 % dicom_slider(Dicoms_x,100) %Using dicom_slider.m function for viewing
 % dicom_slider(Dicoms_y,100) %Using dicom_slider.m function for viewing
-
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 %Mean image for picking the measurement point
 dicom_mask = mean(Dicoms,3);
@@ -78,7 +79,7 @@ question = 1; %"Satisfied?"
 [xcoord, ycoord] = ginput(1);
 while ~isempty(xcoord) %If enter is not pressed
     
-    plot(xcoord,ycoord,'+','markersize', 40)
+    plot(xcoord,ycoord,'+','markersize', 40, 'Linewidth', 1)
     text(xcoord+20,ycoord-20,num2str(location_i),'HorizontalAlignment','center','fontsize', 20);
     
     %Displaying the chosen location from two angles
