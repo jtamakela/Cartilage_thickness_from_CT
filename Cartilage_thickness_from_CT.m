@@ -16,7 +16,7 @@ clear all, close all, clc
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % CHECK THIS ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 % RESOLUTION OF THE CT STACK
-resolution = [40 20 20]; %[Z X Y]. Voxel size in micrometers. Defines also the aspect ratio in figures
+resolution = [20 20 20]; %[Z X Y]. Voxel size in micrometers. Defines also the aspect ratio in figures
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
@@ -70,6 +70,7 @@ pause(1) %Reduces crashing
 title('Pick the location. Press enter to quit'); %
 
 % question = menu('Satisfied?','1) Yes','2) No'); %Option to fall back should be added
+question = 1; %"Satisfied?"
 
 [xcoord, ycoord] = ginput(1);
 while ~isempty(xcoord) %If enter is not pressed
@@ -85,6 +86,8 @@ while ~isempty(xcoord) %If enter is not pressed
     slice_y = Dicoms_y(:,:, round(ycoord));
     
     Dimensions = imdistancecalculator(slice_x,slice_y, xcoord, ycoord, aspectratio); %[Z X Y]
+    
+    if Dimensions ~= [1, 2, 3] %If user is not satisfied with the location, imdistancecalulator returns [1, 2, 3];
     Thicknesses(location_i) = sqrt( (resolution(1)*Dimensions(1))^2 + (resolution(2)*Dimensions(2))^2 + (resolution(3)*Dimensions(3))^2);
     
     disp(['Measured thickness in #', num2str(location_i), ' is ', num2str(Thicknesses(location_i)), ' um'])
@@ -96,6 +99,8 @@ while ~isempty(xcoord) %If enter is not pressed
 
     
     location_i = location_i+1;
+    end
+    
     figure(1);
     pause(1) %Reduces crashing
     title('Pick the location. Press enter to quit'); %
@@ -268,6 +273,9 @@ leftpoint2 = xcoord;
 rightpoint2 = xcoord;
 
 
+question = menu('Satisfied?','1) Yes','2) No'); %Option to fall back should be added
+
+if question == 1
 
 while figchoice ~= 13
     
@@ -395,6 +403,12 @@ end %while
 
 Dimensions = [(highpoint-lowpoint), (rightpoint1 - leftpoint1), (rightpoint2 - leftpoint2)]; %[Z X Y]
 
+elseif question == 2
+    
+    Dimensions = [1, 2, 3];
+    figchoice = 13; %Stops the execution
+    
+end %if question
 
 end %function
 
