@@ -1,4 +1,4 @@
-function [Thicknesses, XCOORD, YCOORD] = Cartilage_thickness_from_CT
+function [Thicknesses, XCOORD, YCOORD] = Cartilage_thickness_from_CT;
 %% m-file for analysing cartilage thickness from CT images
 %% Developed for Mach-1 measurements.
 %% This code is available at https://github.com/jtamakela/Cartilage_thickness_from_CT
@@ -7,9 +7,9 @@ function [Thicknesses, XCOORD, YCOORD] = Cartilage_thickness_from_CT
 % Click on the measurement location and measure
 
 %Calculates cartilage thickness from a chosen location in CT image.
-%Saves the coordinates where thicknesses have been calculated. 
+%Saves the coordinates where thicknesses have been calculated.
 
-% Currently converts the image stack so that the sample is observed from above (similarly as in Mach-1). 
+% Currently converts the image stack so that the sample is observed from above (similarly as in Mach-1).
 % This is done inside load_dicoms (~line 125 ->)
 
 clear all, close all, clc
@@ -19,7 +19,7 @@ clear all, close all, clc
 % CHECK THIS ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 % RESOLUTION OF THE CT STACK
 resolution = [40 40 40]; %[Z X Y]. Voxel size in micrometers. Defines also the aspect ratio in figures
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
 
@@ -48,12 +48,12 @@ info = [];
 %     Dicoms_y = SUBIM_y;
 % end
 
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % % % Options to display all the slices using dicom_slider function
 % dicom_slider(Dicoms,100)
 % dicom_slider(Dicoms_x,100) %Using dicom_slider.m function for viewing
 % dicom_slider(Dicoms_y,100) %Using dicom_slider.m function for viewing
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
 %Mean image for picking the measurement point
 dicom_mask = mean(Dicoms,3);
@@ -92,17 +92,17 @@ while ~isempty(xcoord) %If enter is not pressed
     Dimensions = imdistancecalculator(slice_x,slice_y, xcoord, ycoord, aspectratio); %[Z X Y]
     
     if Dimensions ~= [1, 2, 3] %If user is not satisfied with the location, imdistancecalulator returns [1, 2, 3];
-    Thicknesses(location_i) = sqrt( (resolution(1)*Dimensions(1))^2 + (resolution(2)*Dimensions(2))^2 + (resolution(3)*Dimensions(3))^2);
-    
-    disp(['Measured thickness in #', num2str(location_i), ' is ', num2str(Thicknesses(location_i)), ' um'])
-    
-    XCOORD(location_i) = xcoord; %Saving
-    YCOORD(location_i) = ycoord; 
-
-    save('THICKNESS_temp.mat','Thicknesses', 'XCOORD', 'YCOORD') % In case the code crashes
-
-    
-    location_i = location_i+1;
+        Thicknesses(location_i) = sqrt( (resolution(1)*Dimensions(1))^2 + (resolution(2)*Dimensions(2))^2 + (resolution(3)*Dimensions(3))^2);
+        
+        disp(['Measured thickness in #', num2str(location_i), ' is ', num2str(Thicknesses(location_i)), ' um'])
+        
+        XCOORD(location_i) = xcoord; %Saving
+        YCOORD(location_i) = ycoord;
+        
+        save('THICKNESS_temp.mat','Thicknesses', 'XCOORD', 'YCOORD') % In case the code crashes
+        
+        
+        location_i = location_i+1;
     end
     
     figure(1);
@@ -268,7 +268,7 @@ daspect(aspectratio)
 % axis equal;
 
 %title('Y-direction -^', 'interpreter', 'none')
-title('Choose your angle: Y -^ [2]');
+title('Choose your angle: Y -^ [2]', 'Interpreter', 'none');
 
 line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
 
@@ -284,133 +284,133 @@ rightpoint2 = xcoord;
 question = menu('Satisfied?','1) Yes','2) No'); %Option to fall back should be added
 
 if question == 1
-
-while figchoice ~= 13
     
-    % This is just to assure that there exists no empty position
-    if exist('position')
-        if isempty(position.position1) || isempty(position.position2)
-            clear position
-        end
-    end
-    
-    %Checking existence and displaying the current situation
-    if exist('position')
-        subplot(1,2,1)
-        imagesc(slice_x);
-        %title('X-direction ->', 'interpreter', 'none')
-        title('Choose your angle: X [1]');
-        daspect(aspectratio)
-        % axis equal;
+    while figchoice ~= 13
         
-        line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
-        h1 = imline(gca,position.position1);
-        subplot(1,2,2)
-        imagesc(slice_y);
-        title('Y-direction -^', 'interpreter', 'none')
-        title('Choose your angle: Y -^ [2]');
-        daspect(aspectratio)
-        % axis equal;
-        
-        
-        line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
-        h2 = imline(gca,position.position2);
-    end
-    % drawsubplot(2)
-    
-    % % %
-    pause %This pause waits for the user's input
-    % % %
-    %And returns what subplot is used
-    figchoice = double(get(t,'CurrentCharacter'))
-    
-    
-    
-    % % % Playing with the lines
-    if figchoice == 49 %1-button
-        
-        subplot(1,2,1)
-        imagesc(slice_x);
-        %title('X-direction ->', 'interpreter', 'none')
-        title('Choose your angle: X -> [1]');
-        daspect(aspectratio)
-        % axis equal;
-        
-        line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
+        % This is just to assure that there exists no empty position
         if exist('position')
+            if isempty(position.position1) || isempty(position.position2)
+                clear position
+            end
+        end
+        
+        %Checking existence and displaying the current situation
+        if exist('position')
+            subplot(1,2,1)
+            imagesc(slice_x);
+            %title('X-direction ->', 'interpreter', 'none')
+            title('Choose your angle: X -> [1]');
+            daspect(aspectratio)
+            % axis equal;
+            
+            line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
             h1 = imline(gca,position.position1);
-        else
-            h1 = imline;
-        end
-        position.position1 = wait(h1);
-        subplot(1,2,2)
-        imagesc(slice_y);
-        %title('Y-direction -^', 'interpreter', 'none')
-        title('Choose your angle: Y -^ [2]');
-        daspect(aspectratio)
-        % axis equal;
-        
-        
-        line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
-        
-        %Calulating the new location
-        % Z-axis
-        highpoint = position.position1(1,2);
-        lowpoint = position.position1(2,2);
-        
-        %These are used in the X-axis figure
-        % With these the angle can change
-        leftpoint1 = position.position1(1,1);
-        rightpoint1 = position.position1(2,1);
-        
-        
-        position.position2 = [leftpoint2 highpoint;  rightpoint2 lowpoint];
-        
-        %And displaying
-        h2 = imline(gca,position.position2);
-    elseif figchoice == 50
-        
-        subplot(1,2,2)
-        imagesc(slice_y);
-        title('Choose your angle: Y -^ [2]');
-        daspect(aspectratio)
-        % axis equal;
-        
-        
-        line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
-        if exist('position')
+            subplot(1,2,2)
+            imagesc(slice_y);
+            title('Y-direction -^', 'interpreter', 'none')
+            title('Choose your angle: Y -^ [2]', 'Interpreter', 'none');
+            
+            daspect(aspectratio)
+            % axis equal;
+            
+            
+            line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
             h2 = imline(gca,position.position2);
-        else
-            h2 = imline;
         end
-        position.position2 = wait(h2);
-        subplot(1,2,1)
-        imagesc(slice_x);
-        title('Choose your angle: X -> [1]');
-        daspect(aspectratio)
-        % axis equal;
+        % drawsubplot(2)
+        
+        % % %
+        pause %This pause waits for the user's input
+        % % %
+        %And returns what subplot is used
+        figchoice = double(get(t,'CurrentCharacter'))
         
         
-        line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
-        %Calculating the new location
-        % Z-axis
-        highpoint = position.position2(1,2);
-        lowpoint = position.position2(2,2);
-        %These are used in the X-axis figure
-        % With these the angle can change
-        leftpoint2 = position.position2(1,1);
-        rightpoint2 = position.position2(2,1);
         
-        position.position1 = [leftpoint1 highpoint;  rightpoint1 lowpoint];
-        %And displaying
-        h1 = imline(gca,position.position1);
-    end
+        % % % Playing with the lines
+        if figchoice == 49 %1-button
+            
+            subplot(1,2,1)
+            imagesc(slice_x);
+            title('X-direction ->', 'interpreter', 'none')
+            % title('Choose your angle: X -> [1]');
+            daspect(aspectratio)
+            % axis equal;
+            
+            line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
+            if exist('position')
+                h1 = imline(gca,position.position1);
+            else
+                h1 = imline;
+            end
+            position.position1 = wait(h1);
+            subplot(1,2,2)
+            imagesc(slice_y);
+            title('Choose your angle: Y -^ [2]', 'Interpreter', 'none');
+            daspect(aspectratio)
+            % axis equal;
+            
+            
+            line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
+            
+            %Calulating the new location
+            % Z-axis
+            highpoint = position.position1(1,2);
+            lowpoint = position.position1(2,2);
+            
+            %These are used in the X-axis figure
+            % With these the angle can change
+            leftpoint1 = position.position1(1,1);
+            rightpoint1 = position.position1(2,1);
+            
+            
+            position.position2 = [leftpoint2 highpoint;  rightpoint2 lowpoint];
+            
+            %And displaying
+            h2 = imline(gca,position.position2);
+        elseif figchoice == 50
+            
+            subplot(1,2,2)
+            imagesc(slice_y);
+            title('Y-direction -^', 'interpreter', 'none')
+            daspect(aspectratio)
+            % axis equal;
+            
+            
+            line([xcoord,xcoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the x-slice
+            if exist('position')
+                h2 = imline(gca,position.position2);
+            else
+                h2 = imline;
+            end
+            position.position2 = wait(h2);
+            subplot(1,2,1)
+            imagesc(slice_x);
+            title('Choose your angle: X -> [1]');
+            daspect(aspectratio)
+            % axis equal;
+            
+            
+            line([ycoord,ycoord], [1, length(slice_x)],'Color','red','LineStyle','--') %Displays the y-slice
+            %Calculating the new location
+            % Z-axis
+            highpoint = position.position2(1,2);
+            lowpoint = position.position2(2,2);
+            %These are used in the X-axis figure
+            % With these the angle can change
+            leftpoint2 = position.position2(1,1);
+            rightpoint2 = position.position2(2,1);
+            
+            position.position1 = [leftpoint1 highpoint;  rightpoint1 lowpoint];
+            %And displaying
+            h1 = imline(gca,position.position1);
+        end
+        
+        
+    end %while
     
+    Dimensions = [(highpoint-lowpoint), (rightpoint1 - leftpoint1), (rightpoint2 - leftpoint2)]; %[Z X Y]
     
-end %while
-
-Dimensions = [(highpoint-lowpoint), (rightpoint1 - leftpoint1), (rightpoint2 - leftpoint2)]; %[Z X Y]
-
 elseif question == 2
     
     Dimensions = [1, 2, 3];
