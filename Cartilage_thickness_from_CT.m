@@ -210,8 +210,8 @@ function [SUBIM_x, SUBIM_y] = orientation(Dicoms)
 %Creates two image stacks from two different directions
 
 %Preallocating for efficiancy
-SUBIM_x = ones(size(Dicoms,1), size(Dicoms,2), size(Dicoms,3));
-SUBIM_y = SUBIM_x;
+SUBIM_x = ones(size(Dicoms,3), size(Dicoms,1), size(Dicoms,2));
+SUBIM_y = ones(size(Dicoms,3), size(Dicoms,2), size(Dicoms,1));
 
 h = waitbar(0,'X-direction, please wait...'); %Display waitbar
 
